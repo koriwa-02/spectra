@@ -179,6 +179,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:72px;display:flex;ali
 h1.ht{font-size:clamp(44px,6.5vw,96px);font-weight:200;letter-spacing:-0.02em;line-height:1.02;margin-bottom:30px;color:#fff;text-shadow:0 2px 24px rgba(0,0,0,0.18)}
 .linv{display:inline-block;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:700;letter-spacing:0.03em;color:#fff;text-transform:uppercase}
 .linv .sv{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-style:italic;letter-spacing:0.02em;color:#fff;display:inline}
+/* Headline reveal — blueprint draw-line + per-word masked flip-up */
+.hero-rule{width:220px;max-width:60%;height:1px;margin:0 auto 26px;background:linear-gradient(to right,transparent,rgba(255,255,255,0.7) 18%,rgba(255,255,255,0.7) 82%,transparent);transform-origin:center;transform:scaleX(0);opacity:0}
+.hw-mask{display:inline-block;overflow:hidden;vertical-align:top;perspective:400px}
+.hw-mask .hw{display:inline-block;transform:translateY(115%) rotateX(-60deg);transform-origin:bottom center;will-change:transform,opacity;opacity:0}
 .hero-sub{font-size:14px;color:rgba(255,255,255,0.82);letter-spacing:0.05em;max-width:500px;margin:0 auto 52px;line-height:1.85;text-shadow:0 1px 8px rgba(0,0,0,0.3)}
 .hero-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
 .hero-scroll{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;color:rgba(255,255,255,0.5);font-size:9px;letter-spacing:0.28em;text-transform:uppercase}
@@ -846,6 +850,8 @@ html.spc-loading,body.spc-loading{overflow:hidden!important;height:100%!importan
     p.classList.add('spc-out');
     document.documentElement.classList.remove('spc-loading');
     document.body.classList.remove('spc-loading');
+    window.__spcLoaded = true;
+    window.dispatchEvent(new Event('spc:loaded'));
     setTimeout(function(){ if(p.parentNode) p.parentNode.removeChild(p); }, 900);
   };
   setTimeout(hide, 3000);
@@ -902,6 +908,7 @@ html.spc-loading,body.spc-loading{overflow:hidden!important;height:100%!importan
   <div class="hc tr">Since 2010</div>
   <div class="hero-cnt">
     <div class="hero-ey">Systèmes Architecturaux Premium</div>
+    <div class="hero-rule" id="heroRule"></div>
     <h1 class="ht">L'architecture de<br><span class="linv">L'IN<span class="sv">visi</span>BLE</span></h1>
     <p class="hero-sub">Menuiserie minimaliste, pergolas, portes Filomuro et miroirs TV sur mesure — conçus pour les espaces qui refusent le compromis.</p>
     <div class="hero-ctas">
@@ -1468,11 +1475,11 @@ html.spc-loading,body.spc-loading{overflow:hidden!important;height:100%!importan
 // ═══ DATA ═══
 const EXP={
   menuiserie:{label:'Menuiserie',title:'Menuiserie Aluminium',bg:'images/img-01-f9ab1297.webp',intro:'Shadow Line par Spectra Building Solutions\n\nPortée par une équipe d\'ingénieurs cumulant plus de 30 ans d\'expérience dans l\'industrie de l\'aluminium, Shadow Line est la marque phare de Spectra Building Solutions.\n\nVitrine de l\'architecture minimaliste, notre mission est de concevoir des solutions de menuiserie aluminium exclusives et innovantes. En collaborant avec les leaders du secteur, nous repoussons constamment les exigences techniques et esthétiques des architectes, des professionnels du bâtiment et des particuliers passionnés.',kpis:[{val:'20mm',label:'Profil le plus fin'},{val:'52mm',label:'Double vitrage max'},{val:'4m',label:'Portée coulissante'},{val:'400kg',label:'Vantaux pivot max'}],systems:[{id:'coulissant',name:'<em>SHADOW</em> SLIDE',desc:'Le système phare. Profil visible réduit à 20mm, joint continu périphérique.',specs:['Profilé thermique à rupture de pont','Motorisation domotique compatible','Seuil affleurant disponible']},{id:'levant',name:'<em>SHADOW</em> GUILLOTINE',desc:'Le coulissant à isolation maximale. Le vantail se lève avant de coulisser.',specs:['Joints triple paroi','Seuil zéro marche','Charges jusqu\'à 300kg/vantail']},{id:'pivot',name:'<em>SHADOW</em> PIVOT',desc:'Porte à rotation axiale décalée. Effet théâtral.',specs:['Axes décalés 0–15cm','Vantaux jusqu\'à 400kg','Fermeture électromagnétique']},{id:'chassis',name:'Châssis Fixes',desc:'Maximal glazing. Châssis invisibles pour un mur de verre pur.',specs:['Profil 20mm face vue','Structural glazing disponible','Verres feuilletés']}],apps:[{icon:'🏠',name:'Villa Résidentielle',desc:'Grandes baies coulissantes, pivot d\'entrée'},{icon:'🏨',name:'Hôtellerie',desc:'Chambres et suites premium'},{icon:'🏢',name:'Bureaux',desc:'Façades vitrées'},{icon:'🏗️',name:'Promoteur',desc:'Programmes haut standing'}],cta:'Votre façade mérite l\'invisible.',gallery:[{src:'images/img-02-606f4559.webp',cap:'Façade Vitrée — Villa Contemporaine'},{src:'images/img-03-623c9a57.webp',cap:'Châssis Fixes — Open Space Lumineux'},{src:'images/img-04-51159882.webp',cap:'Profilé 20mm — Détail Seuil Affleurant'},{src:'images/img-05-6a37442e.webp',cap:'Shadow Pivot — Habillage Pierre'},{src:'images/img-06-06a576be.webp',cap:'Shadow Slide — Terrasse Vue Lac'}]},
-  pergola:{label:'Pergolas & Outdoor',title:'Pergolas & Aménagements Extérieurs',bg:'images/img-07-ba103009.webp',intro:'Le système coulissant vertical Shadow Guillotine efface la frontière entre intérieur et extérieur. Dans sa version à galandage, la fenêtre disparaît totalement dans les cloisons pour libérer l\'espace à 100 %.\n\nPerformance & Polyvalence\n\n• Configurations multiples : Modules fixes ou mobiles, visibles ou entièrement dissimulés.\n• Maniabilité parfaite : Un fonctionnement par contrepoids certifié garantit un mouvement fluide, ultra-précis et sécurisé.\n• Grandes dimensions : Automatisation disponible pour les ouvertures monumentales.\n• Options de motorisation : Systèmes d\'automatismes sur mesure (hydraulique, à chaîne, etc.).',kpis:[{val:'100%',label:'Sur mesure'},{val:'140°',label:'Lames orientables'},{val:'6m',label:'Portée max libre'},{val:'IP65',label:'Étanchéité'}],systems:[{id:'bioclimatique',name:'Pergola Bioclimatique',desc:'Lames aluminium orientables motorisées.',specs:['Moteur Somfy intégré','Capteur vent et pluie','LED intégrés en option']},{id:'persiennes',name:'Persiennes',desc:'Persiennes aluminium sur mesure, motorisées ou manuelles.',specs:['Lames orientables ou fixes','Motorisation Somfy disponible','Toutes teintes RAL']}],apps:[{icon:'🏊',name:'Terrasse piscine',desc:'Espace détente couvert'},{icon:'🌿',name:'Jardin',desc:'Structure paysagère'},{icon:'🍽️',name:'Salon extérieur',desc:'Extension living'},{icon:'🏨',name:'Hôtel & Resort',desc:'Lounge outdoor'}],cta:'L\'extérieur fait partie de l\'architecture.',gallery:[{src:'images/img-08-46b8336d.webp',cap:'Façade Vitrée — Villa Contemporaine'},{src:'images/img-09-1bdf7091.webp',cap:'Système Vitré Guillotine — Piscine & Jardin'},{src:'images/img-10-55151996.webp',cap:'Pergola Bioclimatique — Vue Mer au Coucher de Soleil'}]},
-  portails:{label:'Portails & Portillons',title:'Portails & Portillons — Cadiou',bg:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80',intro:'Pour les portails et portillons, Spectra s\'appuie sur l\'expertise Cadiou. Nos équipes assurent la prescription, la pose et l\'intégration domotique.',kpis:[{val:'8m',label:'Portée max'},{val:'4G',label:'Contrôle GSM'},{val:'IP44',label:'Motorisation'},{val:'300',label:'Teintes RAL'}],systems:[{id:'portail-coulissant',name:'Portail Coulissant',desc:'Motorisation enterrée invisible.',specs:['Motorisation enterrée Came/FAAC','Détecteur d\'obstacle','Commande GSM 4G']},{id:'portail-battant',name:'Portail Battant',desc:'Inertie hydraulique, fermeture progressive.',specs:['Fermeture hydraulique','Déverrouillage électrique','1 ou 2 vantaux']},{id:'clotures',name:'Clôtures Sur Mesure',desc:'Lames aluminium verticales ou horizontales.',specs:['Lames alu 60×20mm','Toutes teintes RAL','Hauteur jusqu\'à 2.5m']}],apps:[{icon:'🏠',name:'Villa privée',desc:'Entrée résidentielle'},{icon:'🏢',name:'Résidence',desc:'Accès sécurisé'},{icon:'🏗️',name:'Corporate',desc:'Entrée de siège'},{icon:'🏨',name:'Hôtellerie',desc:'Accès discret'}],cta:'L\'entrée définit l\'identité du projet.'},
-  filomuro:{label:'Portes Filomuro',title:'Portes Filomuro — L\'Invisible',bg:'images/img-11-a7dac6f8.webp',intro:'Le concept Filomuro est né d\'une obsession architecturale : supprimer la porte en tant qu\'objet. Affleurante, sans chambranle visible, peinte ou habillée de la même matière que le mur — elle devient un non-élément.',kpis:[{val:'0mm',label:'Jeu visible'},{val:'100kg',label:'Vantail max'},{val:'3mm',label:'Tolérance pose'},{val:'24h',label:'Installation'}],systems:[{id:'affleurante',name:'Affleurante Plâtre',desc:'La porte se fond dans le mur.',specs:['Cadre enduisable aluminium','Compatible plâtre, carrelage, bois','Charnière invisible']},{id:'galandage-filo',name:'Galandage Filomuro',desc:'La porte disparaît dans la paroi.',specs:['Course douce amortie','Paroi simple ou double','Version vitrée']},{id:'pivot-filo',name:'Pivot Affleurant',desc:'Rotation axiale sur charnière invisible.',specs:['Axe sup/inf','Vantaux 100kg max','Fermeture magnétique']},{id:'habillage',name:'Habillage Continu',desc:'Continuité du matériau sol-mur-porte.',specs:['Plaquage marbre/bois/métal','Épaisseur min 3mm','Découpe laser']}],apps:[{icon:'🛋️',name:'Salon & Living',desc:'Continuité du volume'},{icon:'🚿',name:'Salle de bain',desc:'Accès invisible'},{icon:'👔',name:'Dressing',desc:'Intégration rangements'},{icon:'🏨',name:'Hôtellerie',desc:'Couloirs et suites'}],cta:'La meilleure porte est celle qu\'on ne voit pas.',gallery:[{src:'images/img-11-a7dac6f8.webp',cap:'Affleurante Blanche — Finition Laquée'},{src:'images/img-12-517d3c87.webp',cap:'Affleurante Dorée — Habillage Miroir'},{src:'images/img-13-81b8839f.webp',cap:'Filomuro Bois Noir — Habillage Continu'},{src:'images/img-14-29b0ad9f.webp',cap:'Showroom Spectra — Modèles en Exposition'},{src:'images/img-15-1e190c75.webp',cap:'Habillage Bois Naturel — Chêne Massif'}]},
-  tvmirror:{label:'Télé-Miroirs',title:'Télé-Miroirs Sur Mesure',bg:'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1600&q=80',intro:'La technologie TV-Mirror intègre un écran haute résolution derrière un miroir argenté sans tain. À l\'état passif : un miroir parfait. Sur commande : un écran 4K. Chaque télé-miroir est fabriqué sur mesure.',kpis:[{val:'4K',label:'Résolution max'},{val:'54',label:'IP étanchéité'},{val:'24h',label:'Installation'},{val:'85',label:'Pouces max'}],systems:[{id:'tvm-bain',name:'TV-Mirror Salle de Bain',desc:'Résistant vapeur, anti-buée, LED.',specs:['Étanchéité IP54','Anti-buée chauffant','LED périphérique dimmable']},{id:'tvm-salon',name:'TV-Mirror Salon & Salle à Manger',desc:'Grand format, cadre sur mesure.',specs:['Format jusqu\'à 85"','Télécommande ou domotique','Cadre sur mesure']},{id:'tvm-hotel',name:'TV-Mirror Suite Hôtelière',desc:'Solution clé en main pour l\'hôtellerie.',specs:['Maintenance disponible','Intégration KNX/Control4','Livraison et pose incluses']},{id:'tvm-mesure',name:'TV-Mirror Sur Mesure',desc:'Formes spéciales, formats hors-norme.',specs:['Formes arrondies','Intégration boiseries','Devis sous 48h']}],apps:[{icon:'🛁',name:'Salle de bain',desc:'Miroir intelligent'},{icon:'🍽️',name:'Salle à manger',desc:'Tableau vivant'},{icon:'🏨',name:'Suite hôtelière',desc:'Technologie invisible'},{icon:'💆',name:'Wellness & Spa',desc:'Détente augmentée'}],cta:'Le luxe, c\'est ce qu\'on ne voit pas.'},
-  special:{label:'Solutions Spéciales',title:'Solutions Architecturales Sur Mesure',bg:'images/img-16-006d716b.webp',intro:'Certains projets dépassent les catalogues. Notre bureau d\'études intégré prend en charge chaque demande particulière : calculs de structure, sourcing de matériaux spécifiques, coordination avec les autres corps d\'état.',kpis:[{val:'6m',label:'Portées extrêmes'},{val:'48h',label:'Réponse technique'},{val:'100%',label:'Sur mesure'},{val:'1',label:'Interlocuteur unique'}],systems:[{id:'grandes-portees',name:'Grandes Portées',desc:'Vantaux > 6m. Calcul de structure inclus.',specs:['Calcul structure inclus','Profils renforcés','Compensation thermique']},{id:'facades',name:'Façades Vitrées Structurelles',desc:'Murs rideaux et structural glazing.',specs:['Mur rideau aluminium/acier','Structural glazing','Certification thermique']}],apps:[{icon:'🏗️',name:'Grands projets',desc:'Hôtels, resorts, corporate'},{icon:'🏛️',name:'Patrimoine',desc:'Réhabilitation'},{icon:'🔬',name:'R&D',desc:'Systèmes inédits'},{icon:'🌍',name:'International',desc:'Projets hors Maroc'}],cta:'Aucune contrainte n\'est sans solution.'}
+  pergola:{label:'Pergolas & Outdoor',title:'Pergolas & Aménagements Extérieurs',bg:'images/expertise-pergola-cover.jpg',intro:'Le système coulissant vertical Shadow Guillotine efface la frontière entre intérieur et extérieur. Dans sa version à galandage, la fenêtre disparaît totalement dans les cloisons pour libérer l\'espace à 100 %.\n\nPerformance & Polyvalence\n\n• Configurations multiples : Modules fixes ou mobiles, visibles ou entièrement dissimulés.\n• Maniabilité parfaite : Un fonctionnement par contrepoids certifié garantit un mouvement fluide, ultra-précis et sécurisé.\n• Grandes dimensions : Automatisation disponible pour les ouvertures monumentales.\n• Options de motorisation : Systèmes d\'automatismes sur mesure (hydraulique, à chaîne, etc.).',kpis:[{val:'100%',label:'Sur mesure'},{val:'140°',label:'Lames orientables'},{val:'6m',label:'Portée max libre'},{val:'IP65',label:'Étanchéité'}],systems:[{id:'bioclimatique',name:'Pergola Bioclimatique',desc:'Lames aluminium orientables motorisées.',specs:['Moteur Somfy intégré','Capteur vent et pluie','LED intégrés en option']},{id:'persiennes',name:'Persiennes',desc:'Persiennes aluminium sur mesure, motorisées ou manuelles.',specs:['Lames orientables ou fixes','Motorisation Somfy disponible','Toutes teintes RAL']}],apps:[{icon:'🏊',name:'Terrasse piscine',desc:'Espace détente couvert'},{icon:'🌿',name:'Jardin',desc:'Structure paysagère'},{icon:'🍽️',name:'Salon extérieur',desc:'Extension living'},{icon:'🏨',name:'Hôtel & Resort',desc:'Lounge outdoor'}],cta:'L\'extérieur fait partie de l\'architecture.',gallery:[{src:'images/img-08-46b8336d.webp',cap:'Façade Vitrée — Villa Contemporaine'},{src:'images/img-09-1bdf7091.webp',cap:'Système Vitré Guillotine — Piscine & Jardin'},{src:'images/img-10-55151996.webp',cap:'Pergola Bioclimatique — Vue Mer au Coucher de Soleil'}]},
+  portails:{label:'Portails & Portillons',title:'Portails & Portillons — Cadiou',bg:'images/expertise-portails-cover.jpg',intro:'Pour les portails et portillons, Spectra s\'appuie sur l\'expertise Cadiou. Nos équipes assurent la prescription, la pose et l\'intégration domotique.',kpis:[{val:'8m',label:'Portée max'},{val:'4G',label:'Contrôle GSM'},{val:'IP44',label:'Motorisation'},{val:'300',label:'Teintes RAL'}],systems:[{id:'portail-coulissant',name:'Portail Coulissant',desc:'Motorisation enterrée invisible.',specs:['Motorisation enterrée Came/FAAC','Détecteur d\'obstacle','Commande GSM 4G']},{id:'portail-battant',name:'Portail Battant',desc:'Inertie hydraulique, fermeture progressive.',specs:['Fermeture hydraulique','Déverrouillage électrique','1 ou 2 vantaux']},{id:'clotures',name:'Clôtures Sur Mesure',desc:'Lames aluminium verticales ou horizontales.',specs:['Lames alu 60×20mm','Toutes teintes RAL','Hauteur jusqu\'à 2.5m']}],apps:[{icon:'🏠',name:'Villa privée',desc:'Entrée résidentielle'},{icon:'🏢',name:'Résidence',desc:'Accès sécurisé'},{icon:'🏗️',name:'Corporate',desc:'Entrée de siège'},{icon:'🏨',name:'Hôtellerie',desc:'Accès discret'}],cta:'L\'entrée définit l\'identité du projet.'},
+  filomuro:{label:'Portes Filomuro',title:'Portes Filomuro — L\'Invisible',bg:'images/expertise-filomuro-cover.jpg',intro:'Le concept Filomuro est né d\'une obsession architecturale : supprimer la porte en tant qu\'objet. Affleurante, sans chambranle visible, peinte ou habillée de la même matière que le mur — elle devient un non-élément.',kpis:[{val:'0mm',label:'Jeu visible'},{val:'100kg',label:'Vantail max'},{val:'3mm',label:'Tolérance pose'},{val:'24h',label:'Installation'}],systems:[{id:'affleurante',name:'Affleurante Plâtre',desc:'La porte se fond dans le mur.',specs:['Cadre enduisable aluminium','Compatible plâtre, carrelage, bois','Charnière invisible']},{id:'galandage-filo',name:'Galandage Filomuro',desc:'La porte disparaît dans la paroi.',specs:['Course douce amortie','Paroi simple ou double','Version vitrée']},{id:'pivot-filo',name:'Pivot Affleurant',desc:'Rotation axiale sur charnière invisible.',specs:['Axe sup/inf','Vantaux 100kg max','Fermeture magnétique']},{id:'habillage',name:'Habillage Continu',desc:'Continuité du matériau sol-mur-porte.',specs:['Plaquage marbre/bois/métal','Épaisseur min 3mm','Découpe laser']}],apps:[{icon:'🛋️',name:'Salon & Living',desc:'Continuité du volume'},{icon:'🚿',name:'Salle de bain',desc:'Accès invisible'},{icon:'👔',name:'Dressing',desc:'Intégration rangements'},{icon:'🏨',name:'Hôtellerie',desc:'Couloirs et suites'}],cta:'La meilleure porte est celle qu\'on ne voit pas.',gallery:[{src:'images/img-11-a7dac6f8.webp',cap:'Affleurante Blanche — Finition Laquée'},{src:'images/img-12-517d3c87.webp',cap:'Affleurante Dorée — Habillage Miroir'},{src:'images/img-13-81b8839f.webp',cap:'Filomuro Bois Noir — Habillage Continu'},{src:'images/img-14-29b0ad9f.webp',cap:'Showroom Spectra — Modèles en Exposition'},{src:'images/img-15-1e190c75.webp',cap:'Habillage Bois Naturel — Chêne Massif'}]},
+  tvmirror:{label:'Télé-Miroirs',title:'Télé-Miroirs Sur Mesure',bg:'images/expertise-tvmirror-cover.jpg',intro:'La technologie TV-Mirror intègre un écran haute résolution derrière un miroir argenté sans tain. À l\'état passif : un miroir parfait. Sur commande : un écran 4K. Chaque télé-miroir est fabriqué sur mesure.',kpis:[{val:'4K',label:'Résolution max'},{val:'54',label:'IP étanchéité'},{val:'24h',label:'Installation'},{val:'85',label:'Pouces max'}],systems:[{id:'tvm-bain',name:'TV-Mirror Salle de Bain',desc:'Résistant vapeur, anti-buée, LED.',specs:['Étanchéité IP54','Anti-buée chauffant','LED périphérique dimmable']},{id:'tvm-salon',name:'TV-Mirror Salon & Salle à Manger',desc:'Grand format, cadre sur mesure.',specs:['Format jusqu\'à 85"','Télécommande ou domotique','Cadre sur mesure']},{id:'tvm-hotel',name:'TV-Mirror Suite Hôtelière',desc:'Solution clé en main pour l\'hôtellerie.',specs:['Maintenance disponible','Intégration KNX/Control4','Livraison et pose incluses']},{id:'tvm-mesure',name:'TV-Mirror Sur Mesure',desc:'Formes spéciales, formats hors-norme.',specs:['Formes arrondies','Intégration boiseries','Devis sous 48h']}],apps:[{icon:'🛁',name:'Salle de bain',desc:'Miroir intelligent'},{icon:'🍽️',name:'Salle à manger',desc:'Tableau vivant'},{icon:'🏨',name:'Suite hôtelière',desc:'Technologie invisible'},{icon:'💆',name:'Wellness & Spa',desc:'Détente augmentée'}],cta:'Le luxe, c\'est ce qu\'on ne voit pas.'},
+  special:{label:'Solutions Spéciales',title:'Solutions Architecturales Sur Mesure',bg:'images/expertise-special-cover.jpg',intro:'Certains projets dépassent les catalogues. Notre bureau d\'études intégré prend en charge chaque demande particulière : calculs de structure, sourcing de matériaux spécifiques, coordination avec les autres corps d\'état.',kpis:[{val:'6m',label:'Portées extrêmes'},{val:'48h',label:'Réponse technique'},{val:'100%',label:'Sur mesure'},{val:'1',label:'Interlocuteur unique'}],systems:[{id:'grandes-portees',name:'Grandes Portées',desc:'Vantaux > 6m. Calcul de structure inclus.',specs:['Calcul structure inclus','Profils renforcés','Compensation thermique']},{id:'facades',name:'Façades Vitrées Structurelles',desc:'Murs rideaux et structural glazing.',specs:['Mur rideau aluminium/acier','Structural glazing','Certification thermique']}],apps:[{icon:'🏗️',name:'Grands projets',desc:'Hôtels, resorts, corporate'},{icon:'🏛️',name:'Patrimoine',desc:'Réhabilitation'},{icon:'🔬',name:'R&D',desc:'Systèmes inédits'},{icon:'🌍',name:'International',desc:'Projets hors Maroc'}],cta:'Aucune contrainte n\'est sans solution.'}
 };
 
 const SYS={
@@ -1542,7 +1549,9 @@ function safeImageUrl(value){
   if(s.startsWith('data:image/')) return s;
   try{
     const url = new URL(s, document.baseURI);
-    if(url.protocol === 'https:' && TRUSTED_IMAGE_HOSTS.has(url.hostname)) return url.href.replace(/"/g, '%22');
+    const sameOrigin = url.origin === window.location.origin;
+    const trustedExternal = url.protocol === 'https:' && TRUSTED_IMAGE_HOSTS.has(url.hostname);
+    if(sameOrigin || trustedExternal) return url.href.replace(/"/g, '%22');
   }catch(e){}
   return '';
 }
@@ -1583,10 +1592,12 @@ function onRouteChange(){
 function scrollToTop(){ onRouteChange(); }
 function goHome(fromRouter){
   unlockExpertiseScroll();
+  const wasOn = document.getElementById('pg-home').classList.contains('on');
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.getElementById('pg-home').classList.add('on');
   document.getElementById('backBar').classList.remove('on');
   scrollToTop();
+  if(!wasOn && typeof playHeroTextIn === 'function') playHeroTextIn();
   if(!fromRouter){
     try{ history.pushState({page:'home'}, '', '/'); }catch(e){
       try{ if(window.location.hash) window.location.hash=''; }catch(e2){}
@@ -2669,7 +2680,14 @@ gsap.registerPlugin(ScrollTrigger);
 const mm = gsap.matchMedia();
 
 // ── HERO ONLOAD — runs on ALL screen sizes ──
-const heroTL = gsap.timeline({ delay:0.2 });
+// Starts paused and only plays once the preloader has actually finished
+// hiding, so the entrance isn't burning its animation while hidden behind it.
+const heroTL = gsap.timeline({ delay:0.2, paused:true });
+if(window.__spcLoaded){
+  heroTL.play();
+} else {
+  window.addEventListener('spc:loaded', function(){ heroTL.play(); }, { once:true });
+}
 
 heroTL.fromTo('#heroBg',
   { scale:1.04, opacity:0 },
@@ -2687,17 +2705,55 @@ heroTL.fromTo('.hc',
 heroTL.fromTo('.hero-ey',
   { opacity:0, y:16 }, { opacity:1, y:0, duration:1, ease:'expo.out' }, 0.7
 );
+// Split the headline into masked "words" once — each word sits inside an
+// overflow:hidden box so it can flip up from a hidden state without affecting
+// layout. Line 2 (.linv, with its italic "visi" accent) is wrapped as a single
+// unit so the nested <span class="sv"> styling stays intact.
 const titleEl = document.querySelector('h1.ht');
-if(titleEl){
-  titleEl.innerHTML = titleEl.innerHTML.replace(/L'architecture de/g, "<span class='tw'>L'architecture de</span>");
-  const tw = titleEl.querySelector('.tw');
-  const linv = titleEl.querySelector('.linv');
-  if(tw) heroTL.fromTo(tw, { opacity:0, y:40 }, { opacity:1, y:0, duration:1.1, ease:'expo.out' }, 0.85);
-  if(linv) heroTL.fromTo(linv, { opacity:0, y:40 }, { opacity:1, y:0, duration:1.1, ease:'expo.out' }, 1.0);
+if(titleEl && !titleEl.querySelector('.hw-mask')){
+  const linvEl = titleEl.querySelector('.linv');
+  const linvHtml = linvEl ? linvEl.outerHTML : '';
+  if(linvEl) linvEl.remove();
+  const line1Words = titleEl.innerHTML.split('<br>')[0].trim().split(' ');
+  titleEl.innerHTML = line1Words
+    .map(w => `<span class="hw-mask"><span class="hw">${w}</span></span>`)
+    .join(' ') + '<br>'
+    + `<span class="hw-mask"><span class="hw">${linvHtml}</span></span>`;
 }
-heroTL.fromTo('.hero-sub', { opacity:0, y:20 }, { opacity:1, y:0, duration:0.9, ease:'power3.out' }, 1.2);
-heroTL.fromTo('.hero-ctas', { opacity:0, y:16 }, { opacity:1, y:0, duration:0.8, ease:'power3.out' }, 1.4);
-heroTL.fromTo('.hero-scroll', { opacity:0 }, { opacity:0.5, duration:0.6, ease:'power2.out' }, 1.7);
+heroTL.fromTo('.hero-sub', { opacity:0, y:20 }, { opacity:1, y:0, duration:0.9, ease:'power3.out' }, 1.3);
+heroTL.fromTo('.hero-scroll', { opacity:0 }, { opacity:0.5, duration:0.6, ease:'power2.out' }, 1.9);
+
+// Headline + drafting-line + CTA buttons — runs on first load AND every time
+// we navigate back to the homepage, so the entrance doesn't go stale after
+// the first visit.
+function playHeroTextIn(){
+  const words = gsap.utils.toArray('h1.ht .hw');
+  const tl = gsap.timeline({ delay:0.15 });
+  tl.fromTo('#heroRule',
+    { scaleX:0, opacity:0 },
+    { scaleX:1, opacity:1, duration:0.6, ease:'power2.out' }, 0
+  );
+  if(words.length){
+    tl.fromTo(words,
+      { opacity:0, y:'115%', rotateX:-60 },
+      { opacity:1, y:'0%', rotateX:0, duration:0.95, ease:'back.out(1.6)', stagger:0.12 },
+      0.35
+    );
+    // Soft glow pulse on the italic "visi" accent once the headline settles —
+    // a quiet wink at the brand's "invisible architecture" line.
+    const sv = document.querySelector('h1.ht .sv');
+    if(sv){
+      tl.fromTo(sv,
+        { textShadow:'0 0 0px rgba(255,255,255,0)' },
+        { textShadow:'0 0 18px rgba(255,255,255,0.85)', duration:0.5, ease:'power2.out', yoyo:true, repeat:1 },
+        '-=0.2'
+      );
+    }
+  }
+  tl.fromTo('.hero-ctas', { opacity:0, y:16 }, { opacity:1, y:0, duration:0.8, ease:'power3.out' }, 1.05);
+  return tl;
+}
+heroTL.add(playHeroTextIn(), 0.7);
 
 // ── SCROLL REVEALS via matchMedia ──
 mm.add({
