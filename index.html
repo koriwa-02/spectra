@@ -900,7 +900,7 @@ html.spc-loading,body.spc-loading{overflow:hidden!important;height:100%!importan
 <section class="hero">
   <div class="hero-bg" id="heroBg">
   <div class="hero-vid-fallback" id="heroBgFallback"></div>
-  <video class="hero-vid" id="heroVidA" autoplay muted loop playsinline preload="none"></video>
+  <video class="hero-vid" id="heroVidA" autoplay muted loop playsinline preload="auto" src="hero-video-1.mp4"></video>
   <video class="hero-vid" id="heroVidB" autoplay muted loop playsinline preload="none" style="opacity:0"></video>
 </div>
   <div class="hero-ov"></div>
@@ -2179,14 +2179,18 @@ function pushState(page, key){}
   let cur = 0;
   let active = vidA, standby = vidB;
 
-  // Fade active in once it can play
+  // active (vidA) already has its src declared directly in the markup —
+  // src + autoplay + muted + playsinline all present at parse time is the
+  // one combination every mobile browser reliably honors for silent
+  // autoplay. Re-assigning .src here via JS would undo that (some browsers
+  // treat a JS src assignment as a fresh load that forfeits the autoplay
+  // permission the markup-declared src had), so we leave it alone.
   active.style.opacity = '0';
   active.addEventListener('canplay', function(){
     active.style.opacity = '1';
     if(fallback) fallback.style.transition = 'opacity 1s ease';
     if(fallback) fallback.style.opacity = '0';
   }, {once: true});
-  active.src = clips[0];
   active.play().catch(function(){
     // Some mobile browsers silently reject an unsolicited play() call even
     // when muted — the video would otherwise just sit frozen on its first
