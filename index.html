@@ -2189,6 +2189,16 @@ function pushState(page, key){}
   active.src = clips[0];
   active.play().catch(function(){});
 
+  // Start buffering the next clip immediately (not at the cut moment) so it
+  // has the full ~4.6s the current clip plays to download — on a fast
+  // desktop connection that's invisible either way, but on mobile/cellular
+  // a clip that only starts fetching right when it's needed won't be ready
+  // in time and the crossfade stalls on a frozen frame.
+  if(standby && clips.length > 1){
+    standby.src = clips[1 % clips.length];
+    standby.load();
+  }
+
   // Pause decoding once the hero has scrolled out of view, resume when it's
   // back — no point burning GPU/CPU on a looping video nobody can see.
   const heroSection = document.querySelector('.hero');
@@ -2207,19 +2217,28 @@ function pushState(page, key){}
   // restart and play twice before advancing, which read as more clips than
   // there actually are. CUT_MS is tuned to this clip length.
   var CUT_MS = 4600;
+  cur = 1 % clips.length; // index of the clip already buffering in `standby`
   if(clips.length > 1 && standby){
-    function doCut(){
+    function crossTo(){
+      standby.style.opacity  = '1';
+      active.style.opacity   = '0';
+      var tmp = active; active = standby; standby = tmp;
+      // Start buffering the clip after next right away, giving it the full
+      // cycle to download instead of starting cold at the next cut.
       cur = (cur + 1) % clips.length;
       standby.src = clips[cur];
-      standby.style.opacity = '0';
       standby.load();
+      setTimeout(doCut, CUT_MS);
+    }
+    function doCut(){
+      standby.style.opacity = '0';
       standby.play().catch(function(){});
-      standby.addEventListener('canplay', function(){
-        standby.style.opacity  = '1';
-        active.style.opacity   = '0';
-        var tmp = active; active = standby; standby = tmp;
-        setTimeout(doCut, CUT_MS);
-      }, {once: true});
+      // It's been buffering since the last cut, so on anything but a very
+      // slow connection it's already ready (readyState >= 3, HAVE_FUTURE_DATA)
+      // — waiting for a fresh 'canplay' event here would hang forever since
+      // that event already fired in the background before we got here.
+      if(standby.readyState >= 3){ crossTo(); }
+      else{ standby.addEventListener('canplay', crossTo, {once: true}); }
     }
     setTimeout(doCut, CUT_MS);
   }
