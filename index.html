@@ -2185,7 +2185,14 @@ function pushState(page, key){}
   // vid already has src declared directly in the markup — src + autoplay +
   // muted + playsinline all present at parse time is the one combination
   // every mobile browser reliably honors for silent autoplay without
-  // showing its native "tap to play" fallback UI.
+  // showing its native "tap to play" fallback UI. Some iOS Safari versions
+  // are timing-sensitive about the muted *attribute* alone, though, and can
+  // still flash their native play-button overlay before recognizing it —
+  // setting the muted/playsInline/defaultMuted *properties* directly,
+  // synchronously, removes that ambiguity entirely.
+  vid.muted = true;
+  vid.defaultMuted = true;
+  vid.playsInline = true;
   vid.style.opacity = '0';
   vid.addEventListener('canplay', function(){
     vid.style.opacity = '1';
