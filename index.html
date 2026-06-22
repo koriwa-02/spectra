@@ -2202,7 +2202,11 @@ function pushState(page, key){}
     io.observe(heroSection);
   }
 
-  // Crossfade every 8s if more than 1 clip
+  // Crossfade to the next clip just before the current one would loop back
+  // to its start — each clip is ~5s, so cutting at a fixed 8s let it visibly
+  // restart and play twice before advancing, which read as more clips than
+  // there actually are. CUT_MS is tuned to this clip length.
+  var CUT_MS = 4600;
   if(clips.length > 1 && standby){
     function doCut(){
       cur = (cur + 1) % clips.length;
@@ -2214,10 +2218,10 @@ function pushState(page, key){}
         standby.style.opacity  = '1';
         active.style.opacity   = '0';
         var tmp = active; active = standby; standby = tmp;
-        setTimeout(doCut, 8000);
+        setTimeout(doCut, CUT_MS);
       }, {once: true});
     }
-    setTimeout(doCut, 8000);
+    setTimeout(doCut, CUT_MS);
   }
 })();
 
