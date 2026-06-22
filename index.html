@@ -901,6 +901,7 @@ html.spc-loading,body.spc-loading{overflow:hidden!important;height:100%!importan
   <div class="hero-bg" id="heroBg">
   <div class="hero-vid-fallback" id="heroBgFallback"></div>
   <video class="hero-vid" id="heroVidA" muted loop playsinline preload="none"></video>
+  <video class="hero-vid" id="heroVidB" muted loop playsinline preload="none" style="opacity:0"></video>
 </div>
   <div class="hero-ov"></div>
   <div class="hero-grid"></div>
@@ -2174,7 +2175,7 @@ function pushState(page, key){}
   const fallback = document.getElementById('heroBgFallback');
   if(!vidA) return;
 
-  const clips = ['hero-video.mp4'];
+  const clips = ['hero-video-1.mp4', 'hero-video-2.mp4', 'hero-video-3.mp4'];
   let cur = 0;
   let active = vidA, standby = vidB;
 
