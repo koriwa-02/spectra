@@ -902,8 +902,7 @@ html.spc-loading,body.spc-loading{overflow:hidden!important;height:100%!importan
 <section class="hero">
   <div class="hero-bg" id="heroBg">
   <div class="hero-vid-fallback" id="heroBgFallback"></div>
-  <video class="hero-vid" id="heroVidA" autoplay muted loop playsinline preload="auto" src="hero-video-1.mp4"></video>
-  <video class="hero-vid" id="heroVidB" autoplay muted loop playsinline preload="none" style="opacity:0"></video>
+  <video class="hero-vid" id="heroVidA" autoplay muted playsinline preload="auto" src="hero-video-1.mp4"></video>
 </div>
   <div class="hero-ov"></div>
   <div class="hero-grid"></div>
@@ -2171,98 +2170,70 @@ function pushState(page, key){}
 
 
 // ═══ HERO VIDEO ═══
+// One <video> element, cycling through clips strictly in order by reacting
+// to the browser's own 'ended' event — no JS timer guessing clip duration,
+// no second element to keep in sync. Each clip plays start-to-finish, then
+// the next one loads and plays. Simple and impossible to desync.
 (function(){
-  const vidA     = document.getElementById('heroVidA');
-  const vidB     = document.getElementById('heroVidB');
+  const vid      = document.getElementById('heroVidA');
   const fallback = document.getElementById('heroBgFallback');
-  if(!vidA) return;
+  if(!vid) return;
 
   const clips = ['hero-video-1.mp4', 'hero-video-2.mp4', 'hero-video-3.mp4'];
-  let cur = 1 % clips.length; // index of the clip already buffering in `standby`
-  let active = vidA, standby = vidB;
+  let cur = 0; // vid's src is already clips[0], set directly in the markup
 
-  // active (vidA) already has its src declared directly in the markup —
-  // src + autoplay + muted + playsinline all present at parse time is the
-  // one combination every mobile browser reliably honors for silent
-  // autoplay. Re-assigning .src here via JS would undo that (some browsers
-  // treat a JS src assignment as a fresh load that forfeits the autoplay
-  // permission the markup-declared src had), so we leave it alone.
-  active.style.opacity = '0';
-  active.addEventListener('canplay', function(){
-    active.style.opacity = '1';
-    if(fallback) fallback.style.transition = 'opacity 1s ease';
-    if(fallback) fallback.style.opacity = '0';
+  // vid already has src declared directly in the markup — src + autoplay +
+  // muted + playsinline all present at parse time is the one combination
+  // every mobile browser reliably honors for silent autoplay without
+  // showing its native "tap to play" fallback UI.
+  vid.style.opacity = '0';
+  vid.addEventListener('canplay', function(){
+    vid.style.opacity = '1';
+    if(fallback){ fallback.style.transition = 'opacity 1s ease'; fallback.style.opacity = '0'; }
   }, {once: true});
-  active.play().catch(function(){
-    // Some mobile browsers silently reject an unsolicited play() call even
-    // when muted — the video would otherwise just sit frozen on its first
-    // frame forever. Retry on the first real touch/click, which satisfies
-    // any "needs a user gesture" requirement.
-    var retry = function(){ active.play().catch(function(){}); };
-    document.addEventListener('touchstart', retry, {once: true, passive: true});
-    document.addEventListener('click', retry, {once: true});
+
+  // Some browsers silently reject an unsolicited play() call even when
+  // muted — including, sometimes, on the *second* clip after a src swap
+  // following 'ended', even though the first clip played fine. If that
+  // happens the video would just sit frozen. Any real interaction with the
+  // page (tap, click, or scroll) is enough to satisfy that requirement, so
+  // retry then — once it succeeds once, browsers generally keep allowing
+  // playback for the rest of the session.
+  function safePlay(){
+    var p = vid.play();
+    if(p && p.catch){
+      p.catch(function(){
+        var retry = function(){ vid.play().catch(function(){}); };
+        document.addEventListener('touchstart', retry, {once: true, passive: true});
+        document.addEventListener('click', retry, {once: true});
+        document.addEventListener('scroll', retry, {once: true, passive: true});
+      });
+    }
+  }
+  safePlay();
+
+  vid.addEventListener('ended', function(){
+    cur = (cur + 1) % clips.length;
+    vid.src = clips[cur];
+    // Wait for the browser to actually finish processing the new source
+    // before calling play() — calling it synchronously right after load()
+    // races the source-change and can fail even though nothing is really
+    // wrong, since the element isn't committed to the new clip yet.
+    vid.addEventListener('canplay', safePlay, {once: true});
+    vid.load();
   });
 
-  // Start buffering the next clip immediately (not at the cut moment) so it
-  // has the full ~4.6s the current clip plays to download — on a fast
-  // desktop connection that's invisible either way, but on mobile/cellular
-  // a clip that only starts fetching right when it's needed won't be ready
-  // in time and the crossfade stalls on a frozen frame.
-  if(standby && clips.length > 1){
-    standby.src = clips[1 % clips.length];
-    standby.load();
-  }
-
   // Pause decoding once the hero has scrolled out of view, resume when it's
-  // back — no point burning GPU/CPU on a looping video nobody can see.
+  // back — no point burning GPU/CPU on a video nobody can see.
   const heroSection = document.querySelector('.hero');
   if(heroSection && 'IntersectionObserver' in window){
     const io = new IntersectionObserver(function(entries){
       entries.forEach(function(entry){
-        if(entry.isIntersecting){ active.play().catch(function(){}); }
-        else{ active.pause(); }
+        if(entry.isIntersecting){ vid.play().catch(function(){}); }
+        else{ vid.pause(); }
       });
     }, { threshold: 0.05 });
     io.observe(heroSection);
-  }
-
-  // Crossfade to the next clip just before the current one would loop back
-  // to its start — each clip is ~5s, so cutting at a fixed 8s let it visibly
-  // restart and play twice before advancing, which read as more clips than
-  // there actually are. CUT_MS is tuned to this clip length.
-  var CUT_MS = 4600;
-  if(clips.length > 1 && standby){
-    function crossTo(){
-      standby.style.opacity  = '1';
-      active.style.opacity   = '0';
-      var tmp = active; active = standby; standby = tmp;
-      // Start buffering the clip after next right away, giving it the full
-      // cycle to download instead of starting cold at the next cut.
-      cur = (cur + 1) % clips.length;
-      standby.src = clips[cur];
-      standby.load();
-      setTimeout(doCut, CUT_MS);
-    }
-    function doCut(){
-      standby.style.opacity = '0';
-      standby.play().catch(function(){});
-      // It's been buffering since the last cut, so on anything but a very
-      // slow connection it's already ready (readyState >= 3, HAVE_FUTURE_DATA)
-      // — waiting for a fresh 'canplay' event here would hang forever since
-      // that event already fired in the background before we got here.
-      if(standby.readyState >= 3){ crossTo(); }
-      else{ standby.addEventListener('canplay', crossTo, {once: true}); }
-    }
-    // Only start the crossfade clock once the first clip is actually
-    // playing — if autoplay was delayed (e.g. blocked until a user gesture),
-    // starting this timer at page load would let it elapse in the
-    // background while frozen on the play button, then immediately jump to
-    // the next clip the instant playback finally began.
-    if(!active.paused){
-      setTimeout(doCut, CUT_MS);
-    } else {
-      active.addEventListener('playing', function(){ setTimeout(doCut, CUT_MS); }, {once: true});
-    }
   }
 })();
 
