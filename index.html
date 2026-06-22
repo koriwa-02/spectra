@@ -1614,7 +1614,7 @@ function goHome(fromRouter){
   scrollToTop();
   if(!wasOn && typeof playHeroTextIn === 'function') playHeroTextIn();
   if(!fromRouter){
-    try{ history.pushState({page:'home'}, '', '/'); }catch(e){
+    try{ history.pushState({page:'home'}, '', window.location.pathname); }catch(e){
       try{ if(window.location.hash) window.location.hash=''; }catch(e2){}
     }
   }
@@ -2027,8 +2027,9 @@ function _goHomeToExpertises(){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.getElementById('pg-home').classList.add('on');
   document.getElementById('backBar').classList.remove('on');
-  // Update URL to root so browser history reflects home
-  try{ history.pushState({page:'home'}, '', '/'); }catch(e){}
+  // Update URL to the app's base path (not an absolute '/' — this site can
+  // be hosted under a subpath like /spectra/, and a hardcoded '/' 404s there)
+  try{ history.pushState({page:'home'}, '', window.location.pathname); }catch(e){}
   // Always land on the expertises section, never the hero
   setTimeout(function(){
     var el = document.getElementById('expertises');
@@ -2138,8 +2139,8 @@ window.addEventListener('hashchange', function(){
   routeHash(window.location.hash);
 });
 
-// Handle browser back/forward (popstate — fires when going to a pushState entry
-// such as the '/' that goHome pushes, or any history.pushState navigation)
+// Handle browser back/forward (popstate — fires when going to a pushState
+// entry such as the home state that goHome pushes, or any hash navigation)
 window.addEventListener('popstate', function(e){
   if(_navigating) return;
   var hash = window.location.hash;
