@@ -167,7 +167,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:72px;display:flex;ali
 /* HERO */
 .hero{height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .hero-bg{position:absolute;inset:0;overflow:hidden}
-.hero-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0.85) contrast(1.02);transition:opacity 1.4s ease}
+.hero-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0.85) contrast(1.02);transition:opacity 1.4s ease;pointer-events:none}
+.hero-vid::-webkit-media-controls-start-playback-button{display:none !important;-webkit-appearance:none}
+.hero-vid::-webkit-media-controls{display:none !important}
 .hero-vid-fallback{position:absolute;inset:0;background:linear-gradient(135deg,#080808 0%,#141414 30%,#0a0a0a 60%,#111 100%);background-size:400% 400%;animation:heroBgAnim 14s ease infinite}
 @keyframes heroBgAnim{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .hero-bg.loaded{transform:scale(1)}
@@ -2176,7 +2178,7 @@ function pushState(page, key){}
   if(!vidA) return;
 
   const clips = ['hero-video-1.mp4', 'hero-video-2.mp4', 'hero-video-3.mp4'];
-  let cur = 0;
+  let cur = 1 % clips.length; // index of the clip already buffering in `standby`
   let active = vidA, standby = vidB;
 
   // active (vidA) already has its src declared directly in the markup —
@@ -2229,7 +2231,6 @@ function pushState(page, key){}
   // restart and play twice before advancing, which read as more clips than
   // there actually are. CUT_MS is tuned to this clip length.
   var CUT_MS = 4600;
-  cur = 1 % clips.length; // index of the clip already buffering in `standby`
   if(clips.length > 1 && standby){
     function crossTo(){
       standby.style.opacity  = '1';
@@ -2252,7 +2253,16 @@ function pushState(page, key){}
       if(standby.readyState >= 3){ crossTo(); }
       else{ standby.addEventListener('canplay', crossTo, {once: true}); }
     }
-    setTimeout(doCut, CUT_MS);
+    // Only start the crossfade clock once the first clip is actually
+    // playing — if autoplay was delayed (e.g. blocked until a user gesture),
+    // starting this timer at page load would let it elapse in the
+    // background while frozen on the play button, then immediately jump to
+    // the next clip the instant playback finally began.
+    if(!active.paused){
+      setTimeout(doCut, CUT_MS);
+    } else {
+      active.addEventListener('playing', function(){ setTimeout(doCut, CUT_MS); }, {once: true});
+    }
   }
 })();
 
