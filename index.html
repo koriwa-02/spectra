@@ -900,8 +900,8 @@ html.spc-loading,body.spc-loading{overflow:hidden!important;height:100%!importan
 <section class="hero">
   <div class="hero-bg" id="heroBg">
   <div class="hero-vid-fallback" id="heroBgFallback"></div>
-  <video class="hero-vid" id="heroVidA" muted loop playsinline preload="none"></video>
-  <video class="hero-vid" id="heroVidB" muted loop playsinline preload="none" style="opacity:0"></video>
+  <video class="hero-vid" id="heroVidA" autoplay muted loop playsinline preload="none"></video>
+  <video class="hero-vid" id="heroVidB" autoplay muted loop playsinline preload="none" style="opacity:0"></video>
 </div>
   <div class="hero-ov"></div>
   <div class="hero-grid"></div>
@@ -2187,7 +2187,15 @@ function pushState(page, key){}
     if(fallback) fallback.style.opacity = '0';
   }, {once: true});
   active.src = clips[0];
-  active.play().catch(function(){});
+  active.play().catch(function(){
+    // Some mobile browsers silently reject an unsolicited play() call even
+    // when muted — the video would otherwise just sit frozen on its first
+    // frame forever. Retry on the first real touch/click, which satisfies
+    // any "needs a user gesture" requirement.
+    var retry = function(){ active.play().catch(function(){}); };
+    document.addEventListener('touchstart', retry, {once: true, passive: true});
+    document.addEventListener('click', retry, {once: true});
+  });
 
   // Start buffering the next clip immediately (not at the cut moment) so it
   // has the full ~4.6s the current clip plays to download — on a fast
